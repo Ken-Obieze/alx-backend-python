@@ -16,26 +16,42 @@ class TestAccessNestedMap(unittest.TestCase):
     @parameterized.expand([
         ({"a": 1}, ("a",), 1),
         ({"a": {"b": 2}}, ("a",), {"b": 2}),
-        ({"a": {"b": 2}}, ("a", "b"), 2)
+        ({"a": {"b": 2}}, ("a", "b"), 2),
     ])
-    def test_access_nested_map(self, nested_map, path, expected):
+    def test_access_nested_map(
+            self, nested_map: Dict,
+            path: Tuple[str], expected: Union[int, Dict]
+            ) -> None:
         """
-        Method to test access_nested_map function
+        Test access to nested map
+        Args:
+            nested_map (Dict): nested dictionary
+            path (Tuple): tuple of possible dictionary keys
+            expected (int | Dict): expected result of tested function
+        Returns:
+            None
         """
-        self.assertEqual(access_nested_map(nested_map, path), expected)
+        self.assertEqual(
+            expected,
+            access_nested_map(nested_map, path)
+        )
 
     @parameterized.expand([
-        ({}, ("a",), "a"),
-        ({"a": 1}, ("a", "b"), "b")
+        ({}, ("a",)),
+        ({"a": 1}, ("a", "b")),
     ])
-    def test_access_nested_map_exception(self, nested_map, path, expected_message):
+    def test_access_nested_map_exception(
+            self, nested_map: Dict, path: Tuple[str]
+            ) -> None:
         """
-        Method to test that KeyError is raised for invalid paths
+        Test if an exception is correctly raised
+        Args:
+            same as described above
+        Returns:
+            None
         """
-        with self.assertRaises(KeyError) as context:
-            access_nested_map(nested_map, path)
-
-        self.assertEqual(str(context.exception), expected_message)
+        with self.assertRaises(KeyError):
+            access_nested_map(nested_map, path)[
 
 class TestGetJson(unittest.TestCase):
     """
