@@ -47,7 +47,7 @@ class TestAccessNestedMap(unittest.TestCase):
             None
         """
         with self.assertRaises(KeyError):
-            access_nested_map(nested_map, path)[
+            access_nested_map(nested_map, path)
 
 class TestGetJson(unittest.TestCase):
     """TestGetJson class."""
