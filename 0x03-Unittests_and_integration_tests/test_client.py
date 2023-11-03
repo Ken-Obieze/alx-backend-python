@@ -62,6 +62,29 @@ class TestGithubOrgClient(unittest.TestCase):
         has_key_bool = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(has_key_bool, expected)
 
+    def test_public_repos_with_license(self):
+        """Test the public_repos method with a specific license."""
+        fixtures = {
+            'repos': [
+                {'name': 'repo1', 'license': {'key': 'mit'}},
+                {'name': 'repo2', 'license': {'key': 'apache-2.0'}},
+                {'name': 'repo3', 'license': None},
+            ]
+        }
+
+        org_client = GithubOrgClient('orgname')
+        org_client.public_repos = lambda: fixtures['repos']
+
+        license_filter = "apache-2.0"
+
+        result = org_client.public_repos_with_license(license_filter)
+
+        expected_result = [
+            {'name': 'repo2', 'license': {'key': 'apache-2.0'}}
+        ]
+
+        self.assertEqual(result, expected_result)
+
 
 @parameterized_class(
     ('org_payload', 'repos_payload', 'expected_repos', 'apache2_repos'),
