@@ -23,6 +23,7 @@ def stream_users_in_batches(batch_size):
                 if not batch:
                     break
                 yield batch
+            return
 
 def batch_processing(batch_size):
     """
