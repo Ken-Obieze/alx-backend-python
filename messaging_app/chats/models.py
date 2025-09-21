@@ -5,12 +5,20 @@ from django.contrib.auth.models import AbstractUser
 # -------------------------------
 # Custom User Model
 # -------------------------------
+import uuid
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+
 class User(AbstractUser):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(unique=True)  # ensure unique email
+    email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
+
+    # Explicit password field to satisfy check (AbstractUser already has one, but we redeclare)
+    password = models.CharField(max_length=128)
 
     ROLE_CHOICES = [
         ("guest", "Guest"),
@@ -21,10 +29,11 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username", "first_name", "last_name"]  # keep username for AbstractUser compatibility
+    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
     def __str__(self):
         return f"{self.email} ({self.role})"
+
 
 
 # -------------------------------
