@@ -1,7 +1,6 @@
-from rest_framework.permissions import BasePermission
-from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework import permissions
 
-class IsOwner(BasePermission):
+class IsOwner(permissions.BasePermission):
     """
     Custom permission: Only allow users to access their own objects
     (e.g., conversations, messages).
@@ -18,23 +17,37 @@ class IsOwner(BasePermission):
 
         return False
 
-class IsParticipantOfConversation(BasePermission):
+class IsParticipantOfConversation(permissions.BasePermission):
     """
-    Custom permission to allow only participants of a conversation
-    to view, send, update, or delete messages.
+    Custom permission to ensure only authenticated participants of a conversation
+    can access or send messages in that conversation.
     """
+
+    def has_permission(self, request, view):
+        # Only allow authenticated users
+        return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        # Ensure the user is authenticated first
-        if not request.user or not request.user.is_authenticated:
-            return False
+        """
+        Check object-level permission:
+        - For Conversations: user must be a participant
+        - For Messages: user must be the sender OR a participant of the conversation
+        """
+        user = request.user
 
-        # For Conversation objects
+        # If the object is a Conversation
         if hasattr(obj, "participants"):
-            return request.user in obj.participants.all()
+            # Only allow participants to read/update/delete
+            if request.method in ["PUT", "PATCH", "DELETE"]:
+                return user in obj.participants.all()
+            return user in obj.participants.all()
 
-        # For Message objects (assumes Message has a conversation FK)
+        # If the object is a Message
         if hasattr(obj, "conversation"):
-            return request.user in obj.conversation.participants.all()
+            conversation = obj.conversation
+            if request.method in ["PUT", "PATCH", "DELETE"]:
+                # Only allow the sender OR conversation participant to modify/delete
+                return obj.sender == user or user in conversation.participants.all()
+            return user in conversation.participants.all()
 
         return False
