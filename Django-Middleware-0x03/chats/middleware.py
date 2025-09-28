@@ -86,17 +86,14 @@ class RolePermissionMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Only enforce on authenticated users
+        # Only check if the user is authenticated
         if request.user.is_authenticated:
-            user = request.user
+            # Assuming your custom User model has a `role` field
+            user_role = getattr(request.user, "role", None)
 
-            # Example: only admins and moderators can access certain paths
-            restricted_paths = ["/admin/", "/chats/manage/", "/chats/delete/"]
+            # Deny access if not admin or moderator
+            if user_role not in ["admin", "moderator"]:
+                return HttpResponseForbidden("You do not have permission to perform this action.")
 
-            if any(request.path.startswith(path) for path in restricted_paths):
-                if not hasattr(user, "role") or user.role not in ["admin", "moderator"]:
-                    return HttpResponseForbidden(
-                        "🚫 You do not have permission to perform this action."
-                    )
-
-        return self.get_response(request)
+        response = self.get_response(request)
+        return response
