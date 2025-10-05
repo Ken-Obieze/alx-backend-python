@@ -23,16 +23,24 @@ def delete_user(request):
     return redirect('home')  # Redirect to homepage or login page
 
 @login_required
+def unread_messages_view(request):
+    """
+    Display all unread messages for the logged-in user.
+    Optimized using .only() and a custom manager.
+    """
+    unread_messages = Message.unread.unread_for_user(request.user)
+    return render(request, 'messaging/unread_messages.html', {'unread_messages': unread_messages})
+
+
+@login_required
 def inbox_view(request):
     """
-    Display all messages for the logged-in user.
-    Optimized with select_related and prefetch_related.
+    Display all messages for the logged-in user (for completeness).
     """
     messages = (
         Message.objects.filter(receiver=request.user)
         .select_related('sender', 'receiver')
-        .prefetch_related('replies')
-        .only('id', 'content', 'sender__username', 'receiver__username', 'timestamp', 'parent')
+        .only('id', 'content', 'sender__username', 'timestamp')
     )
     return render(request, 'messaging/inbox.html', {'messages': messages})
 

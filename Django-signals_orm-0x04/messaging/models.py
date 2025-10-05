@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from .managers import UnreadMessagesManager
 
 # -------------------------
 # 🧠 Custom Manager
@@ -33,8 +33,11 @@ class Message(models.Model):
     edited = models.BooleanField(default=False)
     read = models.BooleanField(default=False)  # ✅ New field for unread tracking
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='edited_messages')
-    
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
 
+    objects = models.Manager()
+    unread = UnreadMessagesManager()
+    
     # Self-referential field for threaded replies
     parent_message = models.ForeignKey(
         'self',
