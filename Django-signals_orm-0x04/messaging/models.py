@@ -32,6 +32,8 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     edited = models.BooleanField(default=False)
     read = models.BooleanField(default=False)  # ✅ New field for unread tracking
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='edited_messages')
+    
 
     # Self-referential field for threaded replies
     parent_message = models.ForeignKey(
@@ -73,6 +75,7 @@ class MessageHistory(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="history")
     old_content = models.TextField()
     edited_at = models.DateTimeField(auto_now_add=True)
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='message_histories')
 
     def __str__(self):
         return f"History of Message ID {self.message.id} at {self.edited_at}"
