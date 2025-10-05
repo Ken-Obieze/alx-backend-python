@@ -49,7 +49,7 @@ class Message(models.Model):
     unread = UnreadMessagesManager()  # Custom manager
 
     def __str__(self):
-        return f"From {self.sender.username} to {self.receiver.username}: {self.content[:30]}"
+        return f"{self.sender} → {self.receiver}: {self.content[:20]}"
 
     def get_thread(self):
         """
