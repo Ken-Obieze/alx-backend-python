@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
 
 from .models import Message, MessageHistory
 from notifications.models import Notification  # Assuming Notification is in a separate app
@@ -78,3 +78,26 @@ def message_detail_view(request, message_id):
         'message': message,
         'thread': thread
     })
+
+@login_required
+@cache_page(60)  # Cache this view for 60 seconds
+def conversation_list(request):
+    """
+    View to display all messages in the user's conversation list.
+    Cached for 60 seconds to improve performance.
+    """
+    conversations = (
+        Message.objects.filter(receiver=request.user)
+        .select_related('sender', 'receiver')
+        .only('id', 'content', 'sender__username', 'timestamp')
+    )
+    return render(request, 'messaging/conversation_list.html', {'conversations': conversations})
+
+
+@login_required
+def unread_messages_view(request):
+    """
+    Display all unread messages for the logged-in user.
+    """
+    unread_messages = Message.unread.unread_for_user(request.user)
+    return render(request, 'messaging/unread_messages.html', {'unread_messages': unread_messages})
